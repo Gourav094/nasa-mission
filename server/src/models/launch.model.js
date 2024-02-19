@@ -2,13 +2,13 @@ const launches = new Map()
 let latestFlightNumber = 100
 const launch = {
     flightNumber: 100,
-    mission: '',
-    rocket: '',
+    mission: 'Kepler Exploration X',
+    rocket: 'Explorer IS1',
     launchDate: new Date('Febuary 19,2024'),
-    target: '',
-    customer: '',
+    target: 'Earth',
+    customers: 'NASA',
     success: true,
-    upocoming: true
+    upcoming: true
 }
 
 launches.set(launch.flightNumber, launch)
@@ -22,12 +22,25 @@ function addNewLaunch(launch) {
     launches.set(latestFlightNumber, Object.assign(launch, {
         success: true,
         upcoming: true,
-        customer: ['gourav', 'nasa'],
+        customers: ['Gourav', 'NASA'],
         flightNumber: latestFlightNumber,
     }))
+}
+
+function existLaunchById(laundId){
+    return launches.has(laundId)
+}
+
+function abortLaunchById(launchId){
+    const abort = launches.get(launchId)
+    abort.upcoming = false
+    abort.success = false
+    return abort
 }
 
 module.exports = {
     getAllLaunches,
     addNewLaunch,
+    existLaunchById,
+    abortLaunchById
 }
