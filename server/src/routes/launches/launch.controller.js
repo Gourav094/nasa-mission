@@ -14,7 +14,7 @@ function httpAddNewLaunch(req,res){
     launch.launchDate = new Date(launch.launchDate)
     if(isNaN(launch.launchDate)){
         return res.status(400).json({
-            error:'Date is not valid'
+            error:'Invalid Launch Date'
         })
     }
     addNewLaunch(launch)
