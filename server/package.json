@@ -8,7 +8,7 @@
     "test-watch": "jest --watch",
     "start": "node src/server.js",
     "watch": "nodemon src/server.js",
-    "cluster":"pm2 start src/server.js -i max"
+    "cluster": "pm2 start src/server.js -i max"
   },
   "author": "",
   "license": "ISC",
@@ -17,6 +17,7 @@
     "csv-parse": "^5.5.3",
     "csv-parser": "^3.0.0",
     "express": "^4.18.2",
+    "mongoose": "^8.2.0",
     "morgan": "^1.10.0",
     "pm2": "^5.3.1"
   },
