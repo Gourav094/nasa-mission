@@ -5,7 +5,7 @@ const { loadPlanetData } = require('./models/planet.model')
 
 const PORT = process.env.PORT || 8000
 
-const Mongo_URL = "mongodb+srv://gouravgarg:Gouravgargatlas@nasacluster.sfhdjww.mongodb.net/?retryWrites=true&w=majority&appName=NasaCluster"
+const Mongo_URL = "mongodb+srv://gouravgarg:Gouravgargatlas@nasacluster.sfhdjww.mongodb.net/nasa?retryWrites=true&w=majority&appName=NasaCluster"
 
 const server = http.createServer(app)
 
@@ -19,7 +19,7 @@ mongoose.connection.on('error', (err) => {
 async function startServer() {
     await mongoose.connect(Mongo_URL)
     await loadPlanetData()
-    app.listen(PORT, () => {
+    server.listen(PORT, () => {
         console.log(`Listening on port ${PORT}.........`)
     })
 }
