@@ -13,7 +13,7 @@ mongoose.connection.once('open', () => {
     console.log('MongoDB connection is ready')
 })
 mongoose.connection.on('error', (err) => {
-    console.log("error occured")    
+    console.log(`error during mongoDB connection :: ${err}`)    
 })
 // here function created for starting sever becoz we need to wait to loading data so use await 
 async function startServer() {

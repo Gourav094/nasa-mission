@@ -1,3 +1,5 @@
+const launchesData = require('./launch.mongo')
+
 const launches = new Map()
 let latestFlightNumber = 100
 const launch = {
@@ -11,10 +13,27 @@ const launch = {
     upcoming: true
 }
 
+saveLaunch(launch)
 launches.set(launch.flightNumber, launch)
 
-function getAllLaunches() {
-    return Array.from(launches.values())
+async function getAllLaunches() {
+    // return Array.from(launches.values())
+    return await launchesData.find({},{
+        '_id':0,'__v':0
+    })
+}
+
+async function saveLaunch(launch){
+    try{
+        await launchesData.updateOne({
+            flightNumber:launch.flightNumber
+        },launch,{
+            upsert:true
+        })
+    }
+    catch(err){
+        console.log(`Error during updating launch planet :: ${err}`)
+    }
 }
 
 function addNewLaunch(launch) {
