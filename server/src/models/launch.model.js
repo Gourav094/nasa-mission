@@ -9,7 +9,7 @@ const launch = {
     rocket: 'Explorer IS1',
     launchDate: new Date('Febuary 19,2024'),
     target: 'Kepler-442 b',
-    customers: 'NASA',
+    customers: 'Gourav',
     success: true,
     upcoming: true
 }
@@ -23,6 +23,12 @@ async function getAllLaunches() {
 }
 
 async function saveLaunch(launch) {
+    const planet = await planets.findOne({
+        keplerName:launch.target
+    })
+    if(!planet){
+        throw new Error(`No matching planet found`)
+    }
     await launchesData.findOneAndUpdate({
         flightNumber: launch.flightNumber
     }, launch, {
@@ -39,12 +45,6 @@ async function getLatestFlightNumber() {
 }
 
 async function scheduleNewLaunch(launch) {
-    const planet = await planets.findOne({
-        keplerName:launch.target
-    })
-    if(!planet){
-        throw new Error(`No matching planet found`)
-    }
     const latestFlight = await getLatestFlightNumber() + 1
     const newLaunch = Object.assign(launch, {
         success: true,
