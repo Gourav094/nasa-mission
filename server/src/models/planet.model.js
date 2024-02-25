@@ -1,42 +1,57 @@
 const { parse } = require('csv-parse')
 const path = require('path')
 const fs = require('fs')
-
-const habitablePlanet = []
+const planets = require('./planets.mongo')
 
 function isHabitablePlanet(planet) {
     return planet['koi_disposition'] === 'CONFIRMED' && planet['koi_insol'] > 0.36 && planet['koi_insol'] < 1.11 && planet['koi_prad'] < 1.6;
 }
 
-
 function loadPlanetData() {
     return new Promise((resolve, reject) => {
-        fs.createReadStream(path.join(__dirname,'..','..','data','kepler-data.csv'))
+        fs.createReadStream(path.join(__dirname, '..', '..', 'data', 'kepler-data.csv'))
             .pipe(parse({
                 comment: '#',
                 columns: true
             }))
-            .on('data', (res) => {
-                if (isHabitablePlanet(res)) {
-                    // console.log("controlled")
-                    habitablePlanet.push(res)
+            .on('data', async (data) => {
+                if (isHabitablePlanet(data)) {
+                    // habitablePlanet.push(res)
+                    await savePlanet(data)
                 }
             })
             .on('error', (err) => {
                 reject(err)
                 console.log(err)
             })
-            .on('end', () => {
-                console.log("Data successfully captured")
+            .on('end', async() => {
+                const PlanetsFound = (await getAllPlanets()).length
+                console.log(`${PlanetsFound} habitable planets`)
                 resolve()
             })
     })
 }
 
-function getAllPlanets(){
-    return habitablePlanet
+async function getAllPlanets() {
+    return await planets.find({})
 }
 
+async function savePlanet(planet) {
+    //use upsert because using planets.create can consits duplicate data in mongoDB
+    // it is possible that our mongoDB through error while updating data
+    try{
+        await planets.updateOne({
+            keplerName:planet.kepler_name
+        },{
+            keplerName:planet.keplar_name
+        },{
+            upsert:true
+        })
+    }
+    catch(err){
+        console.error(`could not save error ${err}`)
+    }
+}
 module.exports = {
     loadPlanetData,
     getAllPlanets,
