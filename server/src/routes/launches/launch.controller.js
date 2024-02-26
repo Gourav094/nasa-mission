@@ -45,6 +45,7 @@ async function httpAbortLaunch(req,res){
         ok:true
     })
 }
+
 module.exports = {
     httpGetAllLaunches,
     httpAddNewLaunch,
