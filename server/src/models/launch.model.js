@@ -1,21 +1,95 @@
+const axios = require('axios')
 const launchesData = require('./launch.mongo')
 const planets = require('./planets.mongo')
 
 const Default_Flight_Number = 100
 
+const SPACEX_URL = "https://api.spacexdata.com/v4/launches/query"
+
 const launch = {
-    flightNumber: 100,
-    mission: 'Kepler Exploration X',
-    rocket: 'Explorer IS1',
-    launchDate: new Date('Febuary 19,2024'),
-    target: 'Kepler-442 b',
-    customers: 'Gourav',
-    success: true,
-    upcoming: true
+    flightNumber: 100, // api -> flightNumber
+    mission: 'Kepler Exploration X', // api -> mission
+    rocket: 'Explorer IS1',  // api -> rocket.name
+    launchDate: new Date('Febuary 19,2024'), // api -> Date_local
+    target: 'Kepler-442 b', // api -> not applicable
+    customers: 'Gourav',  // payloads.customers
+    success: true, // api -> success
+    upcoming: true // api -> upcoming
 }
 
 saveLaunch(launch)
 
+async function populateData() {
+    console.log("Downloading Launch Data ...")
+    const response = await axios.post(SPACEX_URL, {
+        query: {},
+        options: {
+            pagination: false,
+            populate: [
+                {
+                    path: 'rocket',
+                    select: {
+                        name: 1
+                    }
+                },
+                {
+                    path: 'payloads',
+                    select: {
+                        customers: 1
+                    }
+                }
+            ]
+        }
+    })
+    //check if any error occured during post request
+    if(response.status !== 200){
+        console.log(`Problem in Downloading Launch Data`)
+        throw new Error(`Error occurred during launch data`)
+    }
+
+    const launchesDoc = response.data.docs
+    for (const launchDoc of launchesDoc) {
+        const payloads = launchDoc['payloads']
+        const customers = payloads.flatMap((payload) => {
+            return payload['customers']
+        })
+        const launch = {
+            flightNumber: launchDoc['flight_number'],
+            mission: launchDoc['name'],
+            rocket: launchDoc['rocket']['name'],
+            launchDate: launchDoc['date_local'],
+            customers,
+            success: launchDoc['success'],
+            upcoming: launchDoc['upcoming']
+        }
+        console.log(`${launch.flightNumber} ${launch.mission}`)
+        await saveLaunch(launch)
+    }
+}
+
+async function loadLaunchData() {
+    const firstLaunch = await findLaunch({
+        flightNumber:1,
+        rocket:'Falcon 1'
+    })
+
+    if(firstLaunch){
+        console.log(`Launch data already exists`)
+    }
+    else{
+        await populateData()
+    }
+}
+
+async function findLaunch(filter){
+    return await launchesData.findOne(filter)
+}
+
+async function existLaunchById(launchId) {
+    return await launchesData.findOne({
+        flightNumber: launchId
+    })
+}
 async function getAllLaunches() {
     return await launchesData.find({}, {
         '_id': 0, '__v': 0
@@ -23,12 +97,6 @@ async function getAllLaunches() {
 }
 
 async function saveLaunch(launch) {
-    const planet = await planets.findOne({
-        keplerName:launch.target
-    })
-    if(!planet){
-        throw new Error(`No matching planet found`)
-    }
     await launchesData.findOneAndUpdate({
         flightNumber: launch.flightNumber
     }, launch, {
@@ -45,6 +113,12 @@ async function getLatestFlightNumber() {
 }
 
 async function scheduleNewLaunch(launch) {
+    const planet = await planets.findOne({
+        keplerName: launch.target
+    })
+    if (!planet) {
+        throw new Error(`No matching planet found`)
+    }
     const latestFlight = await getLatestFlightNumber() + 1
     const newLaunch = Object.assign(launch, {
         success: true,
@@ -56,11 +130,6 @@ async function scheduleNewLaunch(launch) {
 }
 
 
-async function existLaunchById(launchId) {
-    return await launchesData.findOne({
-        flightNumber: launchId
-    })
-}
 
 async function abortLaunchById(launchId) {
     const aborted = await launchesData.updateOne({
@@ -73,6 +142,7 @@ async function abortLaunchById(launchId) {
 }
 
 module.exports = {
+    loadLaunchData,
     getAllLaunches,
     scheduleNewLaunch,
     existLaunchById,
