@@ -15,13 +15,13 @@ describe('Test Launch API',() => {
     describe('Test GET /launches',() => {
         test('it should respond with response 200',async() => {
             const response = await request(app)
-            .get('/launches')
+            .get('/v1/launches')
             .expect(200)
             // or we can use expect(response.statusCode).toBe(200)
         })
         test('it should check headers to json',async() => {
             const response = await request(app)
-            .get('/launches')
+            .get('/v1/launches')
             .expect('Content-Type',/json/)
         })
     })
@@ -46,25 +46,25 @@ describe('Test Launch API',() => {
         }
         test('it should respond with 201 success',async() =>{
             const response = await request(app)
-            .post('/launches')
+            .post('/v1/launches')
             .send(launchData)
             .expect(201)
         })
         test('it should check all properties are correct expect date',async() =>{
             const response = await request(app)
-            .post('/launches')
+            .post('/v1/launches')
             .send(launchData)
             expect(response.body).toMatchObject(launchDataWithoutDate)
         })
         test('it should check date object',async() => {
-            const response = await request(app).post('/launches').send(launchData)
+            const response = await request(app).post('/v1/launches').send(launchData)
             const responseDate = new Date(response.body.launchDate).valueOf
             const requestDate = new Date(launchData.launchDate).valueOf
     
             expect(responseDate).toBe(requestDate)
         })
         test('it should catch missing required properties',async() => {
-            const response = await request(app).post('/launches')
+            const response = await request(app).post('/v1/launches')
             .send(launchDataWithoutDate)
             .expect(400)
             expect(response.body).toStrictEqual({
@@ -72,7 +72,7 @@ describe('Test Launch API',() => {
             })
         })
         test('it should catch invalid date',async() => {
-            const response = await request(app).post('/launches')
+            const response = await request(app).post('/v1/launches')
             .send(launchDataWithInvalidDate)
             .expect(400)
             expect(response.body).toStrictEqual({
