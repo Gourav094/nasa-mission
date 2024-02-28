@@ -6,23 +6,16 @@ jobs:
  build:
   env:
     CI: true
-<<<<<<< HEAD
     MONGO_URL: mongodb://localhost/nasa
   runs-on: ubuntu-latest
-=======
-  runs-on: windows-latest
->>>>>>> parent of 35711ca (setup MongoDB for github action)
   steps:
     - uses: actions/checkout@v2
     - name: Use node version 20
-      uses: supercharge/mongodb-github-action@1.10.0
+      uses: actions/setup-node@v2
       with:
         node-version: '20'
-<<<<<<< HEAD
     - name: Use MongoDb for github actions/checkout
       uses: supercharge/mongodb-github-action@1.10.0
-=======
->>>>>>> parent of 35711ca (setup MongoDB for github action)
     - run: npm install
     - run: npm run build --prefix client
     - run: npm run test
